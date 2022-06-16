@@ -3,6 +3,7 @@ const cors = require("cors");
 const app = express();
 
 const bodyParser = require("body-parser");
+const { uuid } = require("uuidv4");
 const port = 5000;
 
 const corsOptions = {
@@ -20,145 +21,141 @@ app.use(
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.get("/", (req, res) => {
+app.get("/api/v0/", (req, res) => {
     res.send("What´s up?");
 });
-app.get("/conversations", (req, res) => {
-    res.json([
-        {
-            id: '1',
-            firstName: 'Eva',
-            lastName: 'Martin',
-            photoUser:
-                'https://hips.hearstapps.com/ellees.h-cdn.co/assets/15/37/original/original-573cdd52ba3fpareja-sexo-mente-ok-tu-rostro-habla-por-ti-12718540-1-esl-es-tu-rostro-habla-por-ti-jpg.jpg',
-            previewMsg: 'I’m wondering what you think test',
-            time: '2:34PM',
-            notification: true,
-            url: '123456'
+
+function genDateMinus(days = 0, hours = 0, minutes = 0) {
+    let d = new Date();
+    d.setDate(d.getDate() - days);
+    d.setDate(d.getHours() - hours);
+    d.setDate(d.getMinutes() - minutes);
+    return d
+}
+
+app.post("/api/v0/conversations", (req, res) => {
+    const { members, message } = req.body
+
+    if (!members || members.length === 0) return res.json({ error: "Error on 'members' property. Cannot be empty" })
+    if (!message) return res.status(400).json({ error: "Error on 'message' property. Cannot be empty" })
+
+    return res.status(200).json({
+        conversationId: uuid(),
+        membersIds: [uuid()],
+        lastRead: genDateMinus(1),
+        blockedDate: null,
+        lastMessage: {
+            messageId: uuid(),
+            message: message,
+            senderId: '09763fda-5907-4968-b4a0-5b74240cca46',
+            creationDate: genDateMinus()
         },
-        {
-            id: '2',
-            firstName: 'Shakira',
-            lastName: 'Mebarak',
-            photoUser:
-                'https://i.pinimg.com/originals/79/9d/8e/799d8e84c3a3e80f3ef2ed94269f28e7.jpg',
-            previewMsg: 'That’s a great idea!',
-            time: 'Wed',
-            url: ''
-        },
-        {
-            id: '123456789',
-            firstName: 'Example name group',
-            lastName: '',
-            photoUser:
-                'https://d1nhio0ox7pgb.cloudfront.net/_img/g_collection_png/standard/512x512/users5.png',
-            previewMsg: 'That’s a great idea!',
-            time: 'Wed',
-            url: 'group/123'
-        }
-    ]);
+    })
 });
 
-app.get("/conversation/:id", (req, res) => {
-    res.json(
-        {
-            id: '1',
-            date: '9:47 A.M',
-            firstName: 'Eva',
-            lastName: 'Martin',
-            ocupation: 'Copywriter at InfoTech',
-            segment: 'Staff',
-            photoUser:
-                'https://hips.hearstapps.com/ellees.h-cdn.co/assets/15/37/original/original-573cdd52ba3fpareja-sexo-mente-ok-tu-rostro-habla-por-ti-12718540-1-esl-es-tu-rostro-habla-por-ti-jpg.jpg',
-            conversations: [
-                {
-                    id: '1',
-                    date: '9:47 A.M',
-                    firstName: 'Eva',
-                    lastName: 'Martin',
-                    ocupation: 'Copywriter at InfoTech',
-                    segment: 'Staff',
-                    photoUser:
-                        'https://hips.hearstapps.com/ellees.h-cdn.co/assets/15/37/original/original-573cdd52ba3fpareja-sexo-mente-ok-tu-rostro-habla-por-ti-12718540-1-esl-es-tu-rostro-habla-por-ti-jpg.jpg',
-                    messages: 'Hi Marcos! Thank you for attending our event.'
-                },
-                {
-                    id: '2',
-                    date: '10:02 A.M',
-                    firstName: 'Marcos',
-                    lastName: 'Ortiz',
-                    photoUser:
-                        'https://source.unsplash.com/random/800x600?category/people',
-                    messages: 'Hi Eva, I had a great time and met many people.'
-                },
-                {
-                    id: '3',
-                    date: '10:16 A.M',
-                    firstName: 'Marcos',
-                    lastName: 'Ortiz',
-                    photoUser:
-                        'https://source.unsplash.com/random/800x600?category/people',
-                    messages:
-                        'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laboriosam eius aut molestiae architecto consequuntur. Impedit laboriosam voluptatem omnis unde doloremque, suscipit dignissimos minus assumenda! Delectus laudantiu  '
-                }
-            ]
-        }
-    );
+app.post("/api/v0/conversations/:conversationId/messages", (req, res) => {
+    const { message } = req.body
+    if (!message) return res.status(400).json({ error: "Error on 'message' property. Cannot be empty" })
+
+    res.status(200).json({})
 });
 
-app.get("/conversation/group/:id", (req, res) => {
-    res.json(
+app.get("/api/v0/conversations", (req, res) => {
+    res.status(200).json([
         {
-            id: '1',
-            groupName: 'Example name group',
-            quantityPeople: 4,
-            photoUserGroup:
-                'https://d1nhio0ox7pgb.cloudfront.net/_img/g_collection_png/standard/512x512/users5.png',
-            conversations: [
-                {
-                    id: '1',
-                    date: '9:47 A.M',
-                    firstName: 'Salma',
-                    lastName: 'Hayek',
-                    ocupation: 'Copywriter at InfoTech',
-                    segment: 'Staff',
-                    photoUser:
-                        'https://caracoltv.brightspotcdn.com/dims4/default/6396f83/2147483647/strip/true/crop/650x650+0+0/resize/650x650!/quality/90/?url=https%3A%2F%2Fcaracol-brightspot.s3-us-west-2.amazonaws.com%2Fassets%2Fcaracoltv%2F0b4b892b537fc5fb23ca28d053eb3c10.jpg',
-                    messages: 'Hi Marcos! Thank you for attending our event.'
-                },
-                {
-                    id: '2',
-                    date: '10:02 A.M',
-                    firstName: 'Anne',
-                    lastName: 'Anne',
-                    photoUser:
-                        'https://mymodernmet.com/wp/wp-content/uploads/2021/01/morphy-me-celebrity-face-mashups-22.jpg',
-                    messages: 'Hi Eva, I had a great time and met many people.'
-                },
-                {
-                    id: '3',
-                    date: '10:16 A.M',
-                    firstName: 'Keanu',
-                    lastName: 'Reeves',
-                    photoUser:
-                        'https://mymodernmet.com/wp/wp-content/uploads/2021/01/morphy-me-celebrity-face-mashups-24.jpg',
-                    messages:
-                        'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laboriosam eius aut molestiae architecto consequuntur. Impedit laboriosam voluptatem omnis unde doloremque, suscipit dignissimos minus assumenda! Delectus laudantiu  '
-                },
-                {
-                    id: '4',
-                    date: '10:20 A.M',
-                    firstName: 'Cristiano',
-                    lastName: 'Ronaldo',
-                    photoUser:
-                        'https://phantom-marca.unidadeditorial.es/3c2a0a07848a766589ba1447ca8d4e22/resize/1320/f/jpg/assets/multimedia/imagenes/2022/06/03/16542508902355.jpg',
-                    messages:
-                        'Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laboriosam eius aut molestiae architecto consequuntur. Impedit laboriosam voluptatem omnis unde doloremque, suscipit dignissimos minus assumenda! Delectus laudantiu  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Laboriosam eius aut molestiae architecto consequuntur. Impedit laboriosam voluptatem omnis unde doloremque, suscipit dignissimos minus assumenda! Delectus laudantiu  '
-                }
-            ]
-        }
-    );
+            conversationId: uuid(),
+            membersIds: [uuid()],
+            lastRead: genDateMinus(1, 1),
+            blockedDate: null,
+            lastMessage: {
+                messageId: uuid(),
+                message: "Last message received!",
+                senderId: '102cdf96-d71e-4085-8647-f3e749e51295',
+                creationDate: genDateMinus(1)
+            },
+        },
+        {
+            conversationId: 'ab5d394a-8314-4587-8894-46724d08e0d3',
+            membersIds: [uuid()],
+            lastRead: genDateMinus(1),
+            blockedDate: null,
+            lastMessage: {
+                messageId: 'ab5d394a-8314-4587-8394-46724d08e0d9',
+                message: "Hola",
+                senderId: '09763fda-5907-4968-b4a0-5b74240cca46',
+                creationDate: genDateMinus(1)
+            },
+        },
+        {
+            conversationId: uuid(),
+            membersIds: [uuid()],
+            lastRead: genDateMinus(),
+            blockedDate: genDateMinus(0),
+            lastMessage: {
+                messageId: uuid(),
+                message: "Last message received!",
+                senderId: 'ab5d394a-8314-4587-8894-46724d08e0d9',
+                creationDate: genDateMinus(0, 2)
+            },
+        },
+        {
+            conversationId: uuid(),
+            membersIds: [uuid()],
+            lastRead: genDateMinus(),
+            blockedDate: null,
+            lastMessage: {
+                messageId: uuid(),
+                message: "Last message received!",
+                senderId: '26c7b19a-9136-40cc-8e42-110bb286039f',
+                creationDate: genDateMinus(0, 3)
+            },
+        },
+    ])
 });
+
+app.get("/api/v0/conversations/:conversationId/messages", (req, res) => {
+    res.status(200).json([
+        {
+            messageId: 'ab5d394a-8314-4587-8394-46724d08e0d9',
+            message: "Alo",
+            senderId: '09763fda-5907-4968-b4a0-5b74240cca46',
+            creationDate: genDateMinus(1, 4)
+        },
+        {
+            messageId: 'ab5d394a-8314-4587-8394-46724d08e0d9',
+            message: "Prueba",
+            senderId: '09763fda-5907-4968-b4a0-5b74240cca46',
+            creationDate: genDateMinus(1, 3)
+        },
+        {
+            messageId: 'ab5d394a-8314-4587-8394-46724d08e0d9',
+            message: "Prueba 2",
+            senderId: '09763fda-5907-4968-b4a0-5b74240cca46',
+            creationDate: genDateMinus(1, 2)
+        },
+        {
+            messageId: 'ab5d394a-8314-4587-8394-46724d08e0d9',
+            message: "Prueba 3",
+            senderId: '09763fda-5907-4968-b4a0-5b74240cca46',
+            creationDate: genDateMinus(1, 1)
+        },
+        {
+            messageId: 'ab5d394a-8314-4587-8394-46724d08e0d9',
+            message: "Hola",
+            senderId: '09763fda-5907-4968-b4a0-5b74240cca46',
+            creationDate: genDateMinus(1)
+        },
+    ])
+});
+app.post("/api/v0/conversations/:conversationId/read", (req, res) => { res.status(200).json({}) });
+app.post("/api/v0/conversations/:conversationId/block", (req, res) => { res.status(200).json({}) });
+app.post("/api/v0/conversations/:conversationId/unblock", (req, res) => { res.status(200).json({}) });
+app.post("/api/v0/conversations/:conversationId/messages/:messageId/report", (req, res) => {
+    const { options } = req.body
+    if (!options || options.length === 0) return res.json({ error: "Error on 'options' property. Cannot be empty" })
+    res.status(200).json({})
+});
+
 
 const server = app.listen(port, () => {
     console.log(`app listening at ws://localhost:${port}`);
@@ -170,14 +167,14 @@ io.on("connection", function (socket) {
     console.log("A user connected");
 
     // event for a user to join his own channel
-    socket.on("join-room", function ({type,payload}) {
+    socket.on("join-room", function ({ type, payload }) {
         socket.join(`${type}.${payload}.room`);
         console.log(`${type}.${payload} joined`);
     });
 
 
     // event for a user to leave his own channel
-    socket.on("leave-room", function ({type,payload}) {
+    socket.on("leave-room", function ({ type, payload }) {
         socket.leave(`${type}.${payload}.room`);
         console.log(`${type}.${payload} left`);
     });
