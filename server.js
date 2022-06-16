@@ -170,16 +170,16 @@ io.on("connection", function (socket) {
     console.log("A user connected");
 
     // event for a user to join his own channel
-    socket.on("user.join", function (user_id) {
-        socket.join(`organization.${user_id}.room`);
-        console.log(`user ${user_id} joined`);
+    socket.on("join-room", function ({type,payload}) {
+        socket.join(`${type}.${payload}.room`);
+        console.log(`${type}.${payload} joined`);
     });
 
 
     // event for a user to leave his own channel
-    socket.on("user.leave", function (user_id) {
-        socket.leave(`user.${user_id}.room`);
-        console.log(`user ${user_id} left`);
+    socket.on("leave-room", function ({type,payload}) {
+        socket.leave(`${type}.${payload}.room`);
+        console.log(`${type}.${payload} left`);
     });
 
     // event to notify new message to the recipient´s channel
